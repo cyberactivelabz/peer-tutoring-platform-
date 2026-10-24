@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SafetyGuidance } from "./SafetyGuidance.jsx";
 
 const navItems = [
   ["Home", "⌂"],
@@ -84,6 +85,7 @@ function Dashboard({ onRequest, onNavigate }) {
   return (
     <>
       <section className="dashboard-heading"><div><h1>Good morning, Chinedu!</h1><p>Find a tutor, join a session, or access study resources.</p></div><button className="primary-button" onClick={onRequest}>+ Request a session</button></section>
+      <SafetyGuidance />
       <section className="quick-grid">
         <QuickCard icon="♙" title="Find Tutors" text="Get matched with verified peer tutors" onClick={() => onNavigate("Find Tutors")} />
         <QuickCard icon="♧" title="Find Learners" text="Join or create a study group" onClick={() => onNavigate("Find Learners")} />
