@@ -1,54 +1,23 @@
-export default function Brand({ inverse = false, motion = false }) {
-  const color = inverse ? "#fff" : "#000";
+export default function Brand({ inverse = false }) {
+  const color = inverse ? "#fff" : "#fff"; // White on dark bg, will be black on light if you want change to "#000"
+  // If you want it black on light bg and white on dark bg, use:
+  // const color = inverse ? "#fff" : "#000";
+  
   return (
-    <span
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        fontFamily: "Inter, sans-serif",
-        color: color,
-      }}
-    >
-      {/* ROUND LOGO - THIS SPINS */}
-      <span
-        style={{
-          display: "flex",
-          animation: motion ? "spin 2.5s linear infinite" : "none",
-        }}
-      >
-        <svg
-          width="36"
-          height="36"
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M 75 25 A 42 42 0 1 0 75 75
-               M 75 25 C 50 25, 28 32, 40 50 C 52 68, 75 60, 75 75"
-            stroke={color}
-            strokeWidth="11"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx="78" cy="50" r="7" fill={color} />
-        </svg>
-      </span>
+    <span style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      {/* ICON - EXACT LIKE YOUR IMAGE - C+S+DOT */}
+      <svg width="48" height="48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Main C+S shape - one thick shape */}
+        <path
+          d="M 68 18 A 42 42 0 1 0 68 82 
+             M 68 18 C 48 18, 22 26, 38 50 C 54 74, 68 68, 68 82"
+          stroke="white"
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* The dot on the right */}
+        <circle cx="80" cy="52" r="8" fill="white" />
+      </svg>
 
-      {/* WORDS - THIS STAYS STILL */}
-      <span style={{ display: "flex", fontSize: "22px", lineHeight: "1", letterSpacing: "-0.02em" }}>
-        <strong style={{ fontWeight: "800" }}>Study</strong>
-        <span style={{ fontWeight: "400" }}>Connect</span>
-      </span>
-
-      {/* SPIN ANIMATION - ONLY FOR ROUND PART */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </span>
-  );
-}
+      {/* WORDS - Study BOLD, Connect REG
