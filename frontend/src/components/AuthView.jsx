@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api.js";
 import { saveToken } from "../Auth.js";
+import Brand from "./Brand.jsx";
 
 const departments = [
   "Accounting",
@@ -235,8 +236,7 @@ export default function AuthView({ onLogin }) {
     <main className="auth-screen">
       <section className="auth-hero" aria-label="About StudyConnect">
         <div className="auth-brand">
-          <span className="auth-logo">◆</span>
-          <span>StudyConnect</span>
+          <Brand inverse motion />
         </div>
         <p className="eyebrow">YOUR CAMPUS. YOUR COMMUNITY.</p>
         <h1>
