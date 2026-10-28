@@ -101,8 +101,8 @@ const departments = [
 
 export default function AuthView({ onLogin }) {
   const [mode, setMode] = useState("login");
-  const [gender, setGender] = useState("Female");
-  const [role, setRole] = useState("LEARNER");
+  const [gender, setGender] = useState("");
+  const [role, setRole] = useState("");
   const [resetStep, setResetStep] = useState("email");
   const [resetEmail, setResetEmail] = useState("");
   const [resetCode, setResetCode] = useState("");
@@ -426,18 +426,17 @@ export default function AuthView({ onLogin }) {
                           value={gender}
                           onChange={(event) => setGender(event.target.value)}
                         >
-                          <option>Female</option>
-                          <option>Male</option>
+                          <option value="" disabled>Select Gender</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
                         </select>
                       </label>
                     </div>
                     <div className="role-toggle">
                       <label>
                         Account type
-                        <select
-                          value={role}
-                          onChange={(event) => setRole(event.target.value)}
-                        >
+                        <select value={role} onChange={(event) => setRole(event.target.value)} required>
+                          <option value="" disabled>Select Account Type</option>
                           <option value="LEARNER">Learner</option>
                           <option value="TUTOR">Tutor</option>
                           <option value="BOTH">Learner and tutor</option>
@@ -566,47 +565,4 @@ export default function AuthView({ onLogin }) {
                       />
                     </label>
                   </>
-                )}
-                {mode === "login" && (
-                  <button
-                    className="text-button forgot-link"
-                    type="button"
-                    onClick={() => setMode("forgot")}
-                  >
-                    Forgot Password?
-                  </button>
-                )}
-                <button
-                  className="primary-button auth-submit"
-                  disabled={busy}
-                  type="submit"
-                >
-                  {busy
-                    ? "Please wait..."
-                    : mode === "login"
-                      ? "Log In"
-                      : registrationStep === "verify"
-                        ? "Verify email"
-                        : "Sign Up"}
-                </button>
-                <p className="auth-switch">
-                  {mode === "login"
-                    ? "Don’t have an account? "
-                    : "Already have an account? "}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setMode(mode === "login" ? "signup" : "login")
-                    }
-                  >
-                    {mode === "login" ? "Sign Up" : "Log In"}
-                  </button>
-                </p>
-              </fieldset>
-            </form>
-          )}
-        </div>
-      </section>
-    </main>
-  );
-}
+               
