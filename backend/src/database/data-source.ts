@@ -1,5 +1,6 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import * as dotenv from 'dotenv';
+import { synchronizeSchema } from '../config/database.config';
 import { User } from '../modules/users/entities/user.entity';
 import { Otp } from '../modules/auth/entities/otp.entity';
 import { Course } from '../modules/courses/entities/course.entity';
@@ -12,9 +13,9 @@ import { Review } from '../modules/reviews/entities/review.entity';
 import { Report } from '../modules/reports/entities/report.entity';
 import { Notification } from '../modules/notifications/entities/notification.entity';
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
-export const dataSourceOptions: DataSourceOptions = {
+export const dataSourceOptions = {
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432', 10),
@@ -35,9 +36,9 @@ export const dataSourceOptions: DataSourceOptions = {
     Notification,
   ],
   migrations: ['dist/database/migrations/*.js'],
-  synchronize: process.env.DB_SYNCHRONIZE === 'true' || process.env.NODE_ENV !== 'production',
+  synchronize: synchronizeSchema(process.env),
   logging: process.env.DB_LOGGING === 'true',
-};
+} satisfies DataSourceOptions;
 
 const AppDataSource = new DataSource(dataSourceOptions);
 export default AppDataSource;

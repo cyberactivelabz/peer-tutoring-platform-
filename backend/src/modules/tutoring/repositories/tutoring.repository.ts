@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TutoringSession, SessionStatus, SessionType } from '../entities/tutoring-session.entity';
 import { SessionParticipant } from '../entities/session-participant.entity';
 import { CreateSessionDto } from '../dto/create-session.dto';
+import { assertCanJoin, assertCanTransition } from '../session-rules';
 
 @Injectable()
 export class TutoringRepository {
@@ -13,6 +14,64 @@ export class TutoringRepository {
     @InjectRepository(SessionParticipant)
     private readonly participantRepo: Repository<SessionParticipant>,
   ) {}
+
+  async bookSession(learnerId: string, dto: CreateSessionDto): Promise<TutoringSession> {
+    return this.sessionRepo.manager.transaction(async (manager) => {
+      const scoped = new TutoringRepository(
+        manager.getRepository(TutoringSession),
+        manager.getRepository(SessionParticipant),
+      );
+      const session = await scoped.createSession(dto);
+      await scoped.addParticipant(session.id, learnerId, dto.notes || 'Initial booking request');
+      return (await scoped.findById(session.id))!;
+    });
+  }
+
+  async joinGroupSession(
+    learnerId: string,
+    sessionId: string,
+    notes?: string,
+  ): Promise<TutoringSession> {
+    return this.sessionRepo.manager.transaction(async (manager) => {
+      // Lock the session row first so concurrent joins cannot consume the same seat.
+      const session = await manager.findOne(TutoringSession, {
+        where: { id: sessionId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!session) throw new NotFoundException('Tutoring session not found');
+      session.participants = await manager.find(SessionParticipant, { where: { sessionId } });
+      assertCanJoin(session, learnerId);
+      await manager.save(
+        SessionParticipant,
+        manager.create(SessionParticipant, { sessionId, learnerId, notes }),
+      );
+      return (await manager.findOne(TutoringSession, {
+        where: { id: sessionId },
+        relations: ['tutor', 'course', 'participants', 'participants.learner'],
+      }))!;
+    });
+  }
+
+  async transitionSession(
+    userId: string,
+    sessionId: string,
+    status: SessionStatus,
+  ): Promise<TutoringSession> {
+    return this.sessionRepo.manager.transaction(async (manager) => {
+      const session = await manager.findOne(TutoringSession, {
+        where: { id: sessionId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!session) throw new NotFoundException('Tutoring session not found');
+      session.participants = await manager.find(SessionParticipant, { where: { sessionId } });
+      assertCanTransition(session, userId, status);
+      await manager.update(TutoringSession, sessionId, { status });
+      return (await manager.findOne(TutoringSession, {
+        where: { id: sessionId },
+        relations: ['tutor', 'course', 'participants', 'participants.learner'],
+      }))!;
+    });
+  }
 
   async createSession(dto: CreateSessionDto): Promise<TutoringSession> {
     const session = this.sessionRepo.create({
@@ -25,7 +84,7 @@ export class TutoringRepository {
       meetingUrl: dto.meetingUrl,
       scheduledAt: new Date(dto.scheduledAt),
       durationMinutes: dto.durationMinutes || 60,
-      maxLearners: dto.sessionType === SessionType.GROUP ? (dto.maxLearners || 5) : 1,
+      maxLearners: dto.sessionType === SessionType.GROUP ? dto.maxLearners || 5 : 1,
       notes: dto.notes,
       status: SessionStatus.SCHEDULED,
     });
@@ -74,7 +133,11 @@ export class TutoringRepository {
     return qb.orderBy('session.scheduledAt', 'ASC').getMany();
   }
 
-  async addParticipant(sessionId: string, learnerId: string, notes?: string): Promise<SessionParticipant> {
+  async addParticipant(
+    sessionId: string,
+    learnerId: string,
+    notes?: string,
+  ): Promise<SessionParticipant> {
     const participant = this.participantRepo.create({
       sessionId,
       learnerId,

@@ -23,7 +23,11 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "migration:generate": "npm run typeorm -- -d ./src/database/data-source.ts migration:generate",
     "migration:run": "npm run typeorm -- -d ./src/database/data-source.ts migration:run",
-    "migration:revert": "npm run typeorm -- -d ./src/database/data-source.ts migration:revert"
+    "migration:revert": "npm run typeorm -- -d ./src/database/data-source.ts migration:revert",
+    "test:integration": "npm run build && jest --config ./test/jest-integration.json --runInBand",
+    "migration:run:prod": "node ./node_modules/typeorm/cli.js -d ./dist/database/data-source.js migration:run",
+    "migration:revert:prod": "node ./node_modules/typeorm/cli.js -d ./dist/database/data-source.js migration:revert",
+    "migration:show:prod": "node ./node_modules/typeorm/cli.js -d ./dist/database/data-source.js migration:show"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.8",

@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 import { Review } from '../entities/review.entity';
 import { CreateReviewDto } from '../dto/create-review.dto';
 
@@ -17,21 +18,50 @@ export class ReviewsRepository {
     courseId: string,
     dto: CreateReviewDto,
   ): Promise<Review> {
-    const review = this.reviewRepo.create({
-      sessionId: dto.sessionId,
-      tutorId,
-      learnerId,
-      courseId,
-      rating: dto.rating,
-      comment: dto.comment,
-    });
-    return this.reviewRepo.save(review);
+    try {
+      return await this.reviewRepo.manager.transaction(async (manager) => {
+        // Serialize rating changes for this tutor across concurrent reviews.
+        const tutor = await manager.findOne(User, {
+          where: { id: tutorId },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!tutor) throw new NotFoundException('Tutor not found');
+        const existing = await manager.findOne(Review, {
+          where: { sessionId: dto.sessionId, learnerId },
+        });
+        if (existing)
+          throw new BadRequestException('You have already reviewed this tutoring session');
+        const review = await manager.save(
+          Review,
+          manager.create(Review, {
+            sessionId: dto.sessionId,
+            tutorId,
+            learnerId,
+            courseId,
+            rating: dto.rating,
+            comment: dto.comment,
+          }),
+        );
+        const stats = await manager
+          .createQueryBuilder(Review, 'review')
+          .select('AVG(review.rating)', 'average')
+          .addSelect('COUNT(*)', 'count')
+          .where('review.tutorId = :tutorId', { tutorId })
+          .getRawOne();
+        await manager.update(User, tutorId, {
+          rating: Number(Number(stats.average).toFixed(2)),
+          reviewCount: Number(stats.count),
+        });
+        return review;
+      });
+    } catch (error) {
+      if (error?.code === '23505')
+        throw new BadRequestException('You have already reviewed this tutoring session');
+      throw error;
+    }
   }
 
-  async findBySessionAndLearner(
-    sessionId: string,
-    learnerId: string,
-  ): Promise<Review | null> {
+  async findBySessionAndLearner(sessionId: string, learnerId: string): Promise<Review | null> {
     return this.reviewRepo.findOne({
       where: { sessionId, learnerId },
     });

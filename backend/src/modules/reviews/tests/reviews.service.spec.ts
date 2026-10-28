@@ -1,9 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ReviewsService } from '../services/reviews.service';
 import { ReviewsRepository } from '../repositories/reviews.repository';
 import { TutoringRepository } from '../../tutoring/repositories/tutoring.repository';
@@ -59,9 +55,7 @@ describe('ReviewsService', () => {
     it('should throw NotFoundException if session not found', async () => {
       tutoringRepo.findById.mockResolvedValue(null);
 
-      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw BadRequestException if session is not COMPLETED', async () => {
@@ -70,9 +64,7 @@ describe('ReviewsService', () => {
         status: SessionStatus.SCHEDULED,
       });
 
-      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(BadRequestException);
     });
 
     it('should throw ForbiddenException if user was not a participant', async () => {
@@ -82,9 +74,7 @@ describe('ReviewsService', () => {
         participants: [{ learnerId: 'other-learner' }],
       });
 
-      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw BadRequestException if already reviewed', async () => {
@@ -95,12 +85,10 @@ describe('ReviewsService', () => {
       });
       reviewsRepo.findBySessionAndLearner.mockResolvedValue({ id: 'rev-1' });
 
-      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.createReview('learner-1', mockDto)).rejects.toThrow(BadRequestException);
     });
 
-    it('should create review and update tutor rating stats', async () => {
+    it('returns the atomically created review', async () => {
       tutoringRepo.findById.mockResolvedValue({
         id: 'session-1',
         status: SessionStatus.COMPLETED,
@@ -116,10 +104,13 @@ describe('ReviewsService', () => {
 
       const result = await service.createReview('learner-1', mockDto);
       expect(result.id).toBe('rev-1');
-      expect(usersRepo.update).toHaveBeenCalledWith('tutor-1', {
-        rating: 4.8,
-        reviewCount: 10,
-      });
+      expect(reviewsRepo.createReview).toHaveBeenCalledWith(
+        'learner-1',
+        'tutor-1',
+        undefined,
+        mockDto,
+      );
+      expect(usersRepo.update).not.toHaveBeenCalled();
     });
   });
 });

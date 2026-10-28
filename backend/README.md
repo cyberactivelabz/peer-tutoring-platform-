@@ -10,6 +10,8 @@ For a verified demo learner that can sign in through the live frontend, see
 [Live demo account setup](DEMO_ACCOUNT.md). Set its password in the backend's
 environment settings, then run `npm run seed:demo` after building the backend.
 
+[Backend audit, migration, and deployment notes](BACKEND_AUDIT.md) describe the current authorization, transaction, and database safeguards.
+
 ---
 
 ## 📖 Table of Contents

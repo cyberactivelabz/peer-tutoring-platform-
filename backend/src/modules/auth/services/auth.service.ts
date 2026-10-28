@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../../users/services/users.service';
@@ -185,6 +181,7 @@ export class AuthService {
 
   private generateToken(user: User): string {
     const payload = {
+      purpose: 'ACCESS',
       sub: user.id,
       email: user.email,
       role: user.role,

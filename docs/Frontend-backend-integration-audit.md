@@ -36,7 +36,7 @@ Navigation is grouped into Overview, Discover, Learning, Communication, and Acco
 ## Backend limitations kept explicit
 
 - No chat, attachment transport, invitation acceptance/decline, availability timetable, schedule-overlap scoring, notification preferences, or attendance-verification API.
-- Partner candidate selection currently picks a verified student, excluding active matches; it does not enforce course overlap, format, or schedule compatibility. The UI states this limitation.
+- Partner candidate selection now requires an active, verified peer with the exact requested course in their teaching or learning profile, excluding active matches and the previous partner on reshuffle. Meeting format and schedule compatibility are still not enforced, and the UI states that limitation.
 - Institutional email restrictions and campus scoping described in the PRD are not enforced by the current registration/directory implementation. Email verification is labeled as email verification, not institutional identity verification.
 - Material endpoints store hosted-file metadata, not uploaded binary files. Externally hosted resource availability remains the provider's responsibility.
 - Backend notification APIs work with stored notifications, but inspected booking/matching services do not automatically create notifications for every event. Empty activity is therefore legitimate.
