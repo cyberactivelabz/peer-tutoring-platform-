@@ -15,6 +15,9 @@ describe('TutoringService', () => {
   beforeEach(async () => {
     tutoringRepo = {
       createSession: jest.fn(),
+      bookSession: jest.fn(),
+      joinGroupSession: jest.fn(),
+      transitionSession: jest.fn(),
       findById: jest.fn(),
       findUserSessions: jest.fn(),
       findOpenGroupSessions: jest.fn(),
@@ -52,7 +55,7 @@ describe('TutoringService', () => {
       tutorId: 'tutor-uuid',
       courseId: 'course-uuid',
       sessionType: SessionType.ONE_ON_ONE,
-      scheduledAt: '2026-10-25T14:00:00.000Z',
+      scheduledAt: new Date(Date.now() + 86400000).toISOString(),
     };
 
     it('should throw BadRequestException if learner books with themselves', async () => {
@@ -69,7 +72,12 @@ describe('TutoringService', () => {
     });
 
     it('should throw NotFoundException if course does not exist', async () => {
-      usersRepo.findById.mockResolvedValue({ id: 'tutor-uuid' });
+      usersRepo.findById.mockResolvedValue({
+        id: 'tutor-uuid',
+        role: 'TUTOR',
+        isVerified: true,
+        coursesToTeach: ['CSC 201'],
+      });
       coursesRepo.findById.mockResolvedValue(null);
 
       await expect(service.bookSession('learner-uuid', mockDto as any)).rejects.toThrow(
@@ -78,11 +86,16 @@ describe('TutoringService', () => {
     });
 
     it('should successfully book session and add learner as participant', async () => {
-      usersRepo.findById.mockResolvedValue({ id: 'tutor-uuid' });
-      coursesRepo.findById.mockResolvedValue({ id: 'course-uuid' });
+      usersRepo.findById.mockResolvedValue({
+        id: 'tutor-uuid',
+        role: 'TUTOR',
+        isVerified: true,
+        coursesToTeach: ['CSC 201'],
+      });
+      coursesRepo.findById.mockResolvedValue({ id: 'course-uuid', code: 'CSC201' });
       tutoringRepo.createSession.mockResolvedValue({ id: 'session-uuid' });
       tutoringRepo.addParticipant.mockResolvedValue({});
-      tutoringRepo.findById.mockResolvedValue({
+      tutoringRepo.bookSession.mockResolvedValue({
         id: 'session-uuid',
         tutorId: 'tutor-uuid',
         participants: [{ learnerId: 'learner-uuid' }],
@@ -90,41 +103,36 @@ describe('TutoringService', () => {
 
       const result = await service.bookSession('learner-uuid', mockDto as any);
       expect(result.id).toBe('session-uuid');
-      expect(tutoringRepo.addParticipant).toHaveBeenCalledWith(
-        'session-uuid',
-        'learner-uuid',
-        'Initial booking request',
-      );
+      expect(tutoringRepo.bookSession).toHaveBeenCalledWith('learner-uuid', mockDto);
     });
   });
 
-  describe('joinGroupSession', () => {
-    it('should throw BadRequestException if session is not group type', async () => {
-      tutoringRepo.findById.mockResolvedValue({
-        id: 'session-1',
-        sessionType: SessionType.ONE_ON_ONE,
-        status: SessionStatus.SCHEDULED,
-      });
+  it('rejects unverified or non-tutor accounts before writing a booking', async () => {
+    usersRepo.findById.mockResolvedValue({ id: 'tutor', role: 'LEARNER', isVerified: true });
+    coursesRepo.findById.mockResolvedValue({ id: 'course', code: 'CSC201' });
+    await expect(
+      service.bookSession('learner', {
+        tutorId: 'tutor',
+        courseId: 'course',
+        scheduledAt: new Date(Date.now() + 86400000).toISOString(),
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(tutoringRepo.bookSession).not.toHaveBeenCalled();
+  });
 
-      await expect(service.joinGroupSession('learner-1', 'session-1')).rejects.toThrow(
-        BadRequestException,
-      );
+  it('rejects access to a private session by a non-member', async () => {
+    tutoringRepo.findById.mockResolvedValue({
+      tutorId: 'tutor',
+      sessionType: SessionType.ONE_ON_ONE,
+      participants: [{ learnerId: 'learner' }],
+      status: SessionStatus.SCHEDULED,
     });
-
-    it('should throw BadRequestException if group session is full', async () => {
-      tutoringRepo.findById.mockResolvedValue({
-        id: 'session-1',
-        sessionType: SessionType.GROUP,
-        status: SessionStatus.SCHEDULED,
-        tutorId: 'tutor-1',
-        maxLearners: 2,
-        participants: [{ learnerId: 'l1' }, { learnerId: 'l2' }],
-      });
-      tutoringRepo.findParticipant.mockResolvedValue(null);
-
-      await expect(service.joinGroupSession('l3', 'session-1')).rejects.toThrow(
-        BadRequestException,
-      );
-    });
+    await expect(service.getSessionById('session', 'stranger')).rejects.toThrow(
+      'Only session members',
+    );
+    await expect(service.getSessionById('session', 'learner')).resolves.toHaveProperty(
+      'tutorId',
+      'tutor',
+    );
   });
 });

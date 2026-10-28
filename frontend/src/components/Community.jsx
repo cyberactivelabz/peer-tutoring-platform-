@@ -94,9 +94,9 @@ export function Partners({ user }) {
           <p className="eyebrow">A GOOD MATCH STARTS WITH A CONVERSATION</p>
           <h2>Shared goals. Mutual respect.</h2>
           <p>
-            The matching service does not currently check schedules or course
-            overlap. Review your match’s courses and discuss availability before
-            meeting.
+            Matches use the requested course and your peer’s listed courses.
+            Schedules and meeting formats are not checked yet. Discuss
+            availability before meeting.
           </p>
           <SafetyGuidance />
         </aside>

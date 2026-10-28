@@ -1,8 +1,4 @@
-import {
-  Entity,
-  Column,
-  Index,
-} from 'typeorm';
+import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from '../../../database/base.entity';
 
 export enum UserRole {
@@ -12,6 +8,14 @@ export enum UserRole {
   STUDY_PARTNER = 'STUDY_PARTNER',
   ADMIN = 'ADMIN',
 }
+
+// Public account flows may select student roles only. Admins are provisioned separately.
+export const STUDENT_ROLES = [
+  UserRole.LEARNER,
+  UserRole.TUTOR,
+  UserRole.BOTH,
+  UserRole.STUDY_PARTNER,
+];
 
 @Entity('users')
 export class User extends BaseEntity {

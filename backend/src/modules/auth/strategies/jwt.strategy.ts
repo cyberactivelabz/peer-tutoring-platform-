@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -8,6 +8,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: string;
+  purpose?: string;
 }
 
 @Injectable()
@@ -19,13 +20,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret') || 'super_secret_jwt_key_study_connect_2026',
+      secretOrKey: configService.getOrThrow<string>('jwt.secret'),
     });
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user) {
+    if (!payload.sub || (payload.purpose !== undefined && payload.purpose !== 'ACCESS')) {
+      throw new UnauthorizedException('This token cannot be used to access the application');
+    }
+    let user;
+    try {
+      user = await this.usersService.findById(payload.sub);
+    } catch (error) {
+      if (error instanceof NotFoundException)
+        throw new UnauthorizedException('User account no longer active or exists');
+      throw error;
+    }
+    if (!user || !user.isActive || !user.isVerified) {
       throw new UnauthorizedException('User account no longer active or exists');
     }
     return user;

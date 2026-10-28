@@ -2,19 +2,26 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UsersRepository } from '../repositories/users.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { User } from '../entities/user.entity';
+import { STUDENT_ROLES, User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const existing = await this.usersRepository.findByEmail(createUserDto.email);
+    if (createUserDto.role !== undefined && !STUDENT_ROLES.includes(createUserDto.role)) {
+      throw new ForbiddenException(
+        'Administrator roles cannot be assigned through student account forms',
+      );
+    }
+    const email = createUserDto.email.toLowerCase().trim();
+    const existing = await this.usersRepository.findByEmail(email);
     if (existing) {
       throw new ConflictException('A student with this email address already exists');
     }
@@ -22,11 +29,18 @@ export class UsersService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-    const user = await this.usersRepository.create({
-      ...createUserDto,
-      email: createUserDto.email.toLowerCase().trim(),
-      password: hashedPassword,
-    });
+    let user: User;
+    try {
+      user = await this.usersRepository.create({
+        ...createUserDto,
+        email,
+        password: hashedPassword,
+      });
+    } catch (error) {
+      if (error?.code === '23505')
+        throw new ConflictException('A student with this email address already exists');
+      throw error;
+    }
 
     delete user.password;
     return user;
@@ -53,6 +67,11 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    if (updateUserDto.role !== undefined && !STUDENT_ROLES.includes(updateUserDto.role)) {
+      throw new ForbiddenException(
+        'Administrator roles cannot be assigned through student account forms',
+      );
+    }
     const user = await this.findById(id);
     const updated = await this.usersRepository.update(user.id, updateUserDto);
     return updated!;

@@ -18,6 +18,7 @@ export function Profile({ user, onSaved }) {
       );
       if (!values.firstName || !values.lastName)
         throw new Error("First and last names cannot be blank.");
+      if (values.role === user.role) delete values.role;
       for (const key of ["coursesToTeach", "coursesNeedingHelp"])
         values[key] = [
           ...new Set(

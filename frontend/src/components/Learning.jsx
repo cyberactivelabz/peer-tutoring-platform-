@@ -63,6 +63,12 @@ export function Booking({ tutor, onClose, onBooked }) {
   const courses = useResource(() => api.courses());
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const normalizeCode = (code) => code.replace(/\s/g, "").toUpperCase();
+  const offeredCourses = (courses.data || []).filter((course) =>
+    tutor.coursesToTeach?.some(
+      (code) => normalizeCode(code) === normalizeCode(course.code),
+    ),
+  );
   const [mode, setMode] = useState("PHYSICAL");
   const [sessionType, setSessionType] = useState("ONE_ON_ONE");
   const submit = async (e) => {
@@ -107,11 +113,11 @@ export function Booking({ tutor, onClose, onBooked }) {
         </div>
       </div>
       <LoadState resource={courses}>
-        {courses.data?.length ? (
+        {offeredCourses.length ? (
           <form onSubmit={submit}>
             <Notice error>{error}</Notice>
             <fieldset disabled={busy} className="form-fields">
-              <CourseSelect courses={courses.data} />
+              <CourseSelect courses={offeredCourses} />
               <label>
                 Learning goal
                 <textarea
@@ -198,8 +204,9 @@ export function Booking({ tutor, onClose, onBooked }) {
             </fieldset>
           </form>
         ) : (
-          <Empty title="No courses available">
-            A course must be added to the catalog before you can book a session.
+          <Empty title="No matching teaching courses">
+            This tutor’s listed courses do not match the current catalog. Choose
+            another tutor or ask them to update their teaching profile.
           </Empty>
         )}
       </LoadState>

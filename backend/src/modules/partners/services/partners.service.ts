@@ -7,10 +7,7 @@ import {
 import { PartnersRepository } from '../repositories/partners.repository';
 import { FindPartnerDto } from '../dto/find-partner.dto';
 import { ReshufflePartnerDto } from '../dto/reshuffle-partner.dto';
-import {
-  StudyPartnerMatch,
-  MatchStatus,
-} from '../entities/study-partner-match.entity';
+import { StudyPartnerMatch, MatchStatus } from '../entities/study-partner-match.entity';
 import { CoursesRepository } from '../../courses/repositories/courses.repository';
 
 @Injectable()
@@ -20,10 +17,7 @@ export class PartnersService {
     private readonly coursesRepo: CoursesRepository,
   ) {}
 
-  async matchPartner(
-    userId: string,
-    dto: FindPartnerDto,
-  ): Promise<StudyPartnerMatch> {
+  async matchPartner(userId: string, dto: FindPartnerDto): Promise<StudyPartnerMatch> {
     const course = await this.coursesRepo.findById(dto.courseId);
     if (!course) {
       throw new NotFoundException(`Course with ID ${dto.courseId} not found`);
@@ -67,9 +61,7 @@ export class PartnersService {
     }
 
     if (match.studentAId !== userId && match.studentBId !== userId) {
-      throw new ForbiddenException(
-        'You are not authorized to reshuffle this study partner match',
-      );
+      throw new ForbiddenException('You are not authorized to reshuffle this study partner match');
     }
 
     if (match.status !== MatchStatus.ACTIVE) {
@@ -79,10 +71,7 @@ export class PartnersService {
     }
 
     // Mark previous match as reshuffled
-    const previousMatch = (await this.partnersRepo.updateStatus(
-      matchId,
-      MatchStatus.RESHUFFLED,
-    ))!;
+    const previousMatch = (await this.partnersRepo.updateStatus(matchId, MatchStatus.RESHUFFLED))!;
 
     // Attempt to find a new eligible study partner
     let newMatch: StudyPartnerMatch | undefined;
@@ -90,6 +79,7 @@ export class PartnersService {
       userId,
       match.courseId,
       match.preferredFormat,
+      [match.studentAId === userId ? match.studentBId : match.studentAId],
     );
 
     if (candidate) {

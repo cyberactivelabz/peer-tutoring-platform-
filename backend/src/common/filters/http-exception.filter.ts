@@ -29,10 +29,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else if (typeof res === 'object' && res !== null) {
         const errorResponse = res as Record<string, any>;
         message = errorResponse.message || message;
-        errors = errorResponse.errors || (Array.isArray(errorResponse.message) ? errorResponse.message : null);
+        errors =
+          errorResponse.errors ||
+          (Array.isArray(errorResponse.message) ? errorResponse.message : null);
       }
-    } else if (exception instanceof Error) {
-      message = exception.message;
     }
 
     const formattedMessage = Array.isArray(message) ? message[0] : message;
