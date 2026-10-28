@@ -2056,3 +2056,7 @@ label small {
   margin: 6px 6px 0 0;
   flex-shrink: 0;
 }
+.logo-symbol img,
+.logo-symbol video {
+  filter: grayscale(1) contrast(10);
+}
