@@ -22,9 +22,7 @@ export class ReviewsService {
   async createReview(learnerId: string, dto: CreateReviewDto): Promise<Review> {
     const session = await this.tutoringRepo.findById(dto.sessionId);
     if (!session) {
-      throw new NotFoundException(
-        `Tutoring session with ID ${dto.sessionId} not found`,
-      );
+      throw new NotFoundException(`Tutoring session with ID ${dto.sessionId} not found`);
     }
 
     if (session.status !== SessionStatus.COMPLETED) {
@@ -33,23 +31,16 @@ export class ReviewsService {
       );
     }
 
-    const isParticipant = session.participants?.some(
-      (p) => p.learnerId === learnerId,
-    );
+    const isParticipant = session.participants?.some((p) => p.learnerId === learnerId);
     if (!isParticipant) {
       throw new ForbiddenException(
         'Only students who attended this tutoring session can leave a review',
       );
     }
 
-    const existingReview = await this.reviewsRepo.findBySessionAndLearner(
-      dto.sessionId,
-      learnerId,
-    );
+    const existingReview = await this.reviewsRepo.findBySessionAndLearner(dto.sessionId, learnerId);
     if (existingReview) {
-      throw new BadRequestException(
-        'You have already reviewed this tutoring session',
-      );
+      throw new BadRequestException('You have already reviewed this tutoring session');
     }
 
     const review = await this.reviewsRepo.createReview(
@@ -58,13 +49,6 @@ export class ReviewsService {
       session.courseId,
       dto,
     );
-
-    // Recalculate tutor average rating & review count
-    const { average, count } = await this.reviewsRepo.calculateTutorRating(session.tutorId);
-    await this.usersRepo.update(session.tutorId, {
-      rating: average,
-      reviewCount: count,
-    });
 
     return review;
   }

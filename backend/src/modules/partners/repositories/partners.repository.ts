@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  StudyPartnerMatch,
-  MatchStatus,
-} from '../entities/study-partner-match.entity';
+import { StudyPartnerMatch, MatchStatus } from '../entities/study-partner-match.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Injectable()
@@ -77,10 +74,7 @@ export class PartnersRepository {
       .getMany();
   }
 
-  async updateStatus(
-    id: string,
-    status: MatchStatus,
-  ): Promise<StudyPartnerMatch | null> {
+  async updateStatus(id: string, status: MatchStatus): Promise<StudyPartnerMatch | null> {
     await this.matchRepo.update(id, { status });
     return this.findById(id);
   }
@@ -89,6 +83,7 @@ export class PartnersRepository {
     requesterId: string,
     courseId: string,
     _preferredFormat?: string,
+    excludedIds: string[] = [],
   ): Promise<User | null> {
     // Find IDs of users already actively matched with requester for this course
     const existingMatches = await this.matchRepo.find({
@@ -98,7 +93,7 @@ export class PartnersRepository {
       ],
     });
 
-    const excludedUserIds = new Set<string>([requesterId]);
+    const excludedUserIds = new Set<string>([requesterId, ...excludedIds]);
     for (const m of existingMatches) {
       excludedUserIds.add(m.studentAId);
       excludedUserIds.add(m.studentBId);
@@ -111,6 +106,12 @@ export class PartnersRepository {
         excludedIds: Array.from(excludedUserIds),
       })
       .andWhere('user.isVerified = :verified', { verified: true })
+      .andWhere('user.isActive = :active', { active: true })
+      .andWhere('user.role != :admin', { admin: 'ADMIN' })
+      .andWhere(
+        `(SELECT regexp_replace(upper(c.code), '[[:space:]]', '', 'g') FROM courses c WHERE c.id = :courseId) = ANY(string_to_array(regexp_replace(upper(COALESCE("user"."coursesToTeach", '') || ',' || COALESCE("user"."coursesNeedingHelp", '')), '[[:space:]]', '', 'g'), ','))`,
+        { courseId },
+      )
       .orderBy('user.createdAt', 'DESC')
       .getOne();
 

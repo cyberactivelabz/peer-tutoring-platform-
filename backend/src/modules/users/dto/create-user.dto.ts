@@ -4,11 +4,12 @@ import {
   IsString,
   MinLength,
   IsOptional,
-  IsEnum,
+  IsIn,
+  ArrayMaxSize,
   IsArray,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../entities/user.entity';
+import { STUDENT_ROLES, UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'student@university.edu' })
@@ -52,9 +53,9 @@ export class CreateUserDto {
   @IsString()
   level?: string;
 
-  @ApiPropertyOptional({ enum: UserRole, default: UserRole.BOTH })
+  @ApiPropertyOptional({ enum: STUDENT_ROLES, default: UserRole.BOTH })
   @IsOptional()
-  @IsEnum(UserRole)
+  @IsIn(STUDENT_ROLES)
   role?: UserRole;
 
   @ApiPropertyOptional({ example: 'Passionate about algorithms and calculus peer tutoring.' })
@@ -65,11 +66,15 @@ export class CreateUserDto {
   @ApiPropertyOptional({ example: ['CSC201', 'MTH101'], type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
   coursesToTeach?: string[];
 
   @ApiPropertyOptional({ example: ['PHY102', 'CHM101'], type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
   coursesNeedingHelp?: string[];
 
   @ApiPropertyOptional({ example: '+2348012345678' })

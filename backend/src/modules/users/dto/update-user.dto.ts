@@ -1,11 +1,6 @@
-import {
-  IsString,
-  IsOptional,
-  IsEnum,
-  IsArray,
-} from 'class-validator';
+import { IsString, IsOptional, IsIn, ArrayMaxSize, IsArray } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../entities/user.entity';
+import { STUDENT_ROLES, UserRole } from '../entities/user.entity';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Ada' })
@@ -38,9 +33,9 @@ export class UpdateUserDto {
   @IsString()
   level?: string;
 
-  @ApiPropertyOptional({ enum: UserRole })
+  @ApiPropertyOptional({ enum: STUDENT_ROLES })
   @IsOptional()
-  @IsEnum(UserRole)
+  @IsIn(STUDENT_ROLES)
   role?: UserRole;
 
   @ApiPropertyOptional({ example: 'Passionate about algorithms and calculus peer tutoring.' })
@@ -56,11 +51,15 @@ export class UpdateUserDto {
   @ApiPropertyOptional({ example: ['CSC201', 'CSC301'], type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
   coursesToTeach?: string[];
 
   @ApiPropertyOptional({ example: ['PHY102'], type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
   coursesNeedingHelp?: string[];
 
   @ApiPropertyOptional({ example: '+2348012345678' })

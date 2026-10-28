@@ -1,16 +1,11 @@
-import {
-  Entity,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { TutoringSession } from '../../tutoring/entities/tutoring-session.entity';
 import { Course } from '../../courses/entities/course.entity';
 
 @Entity('reviews')
+@Index('UQ_session_review', ['sessionId', 'learnerId'], { unique: true })
 export class Review extends BaseEntity {
   @Index()
   @Column({ type: 'uuid' })

@@ -9,13 +9,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { TutoringService } from '../services/tutoring.service';
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { UpdateSessionStatusDto } from '../dto/update-session-status.dto';
@@ -33,10 +27,7 @@ export class TutoringController {
   @Post('book')
   @ApiOperation({ summary: 'Book a 1-on-1 or group tutoring session' })
   @ApiResponse({ status: 201, description: 'Tutoring session successfully booked' })
-  async bookSession(
-    @CurrentUser() user: User,
-    @Body() dto: CreateSessionDto,
-  ) {
+  async bookSession(@CurrentUser() user: User, @Body() dto: CreateSessionDto) {
     return this.tutoringService.bookSession(user.id, dto);
   }
 
@@ -69,8 +60,8 @@ export class TutoringController {
   @Get(':id')
   @ApiOperation({ summary: 'Get details of a specific tutoring session' })
   @ApiResponse({ status: 200, description: 'Session details' })
-  async getSessionById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.tutoringService.getSessionById(id);
+  async getSessionById(@Param('id', ParseUUIDPipe) id: string, @CurrentUser('id') userId: string) {
+    return this.tutoringService.getSessionById(id, userId);
   }
 
   @Patch(':id/status')

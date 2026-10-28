@@ -21,7 +21,7 @@ import { Otp } from './entities/otp.entity';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret') || 'super_secret_jwt_key_study_connect_2026',
+        secret: configService.getOrThrow<string>('jwt.secret'),
         signOptions: {
           expiresIn: configService.get<string>('jwt.expiresIn') || '7d',
         },
