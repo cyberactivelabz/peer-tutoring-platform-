@@ -16,6 +16,7 @@ import {
 import { api } from "./api.js";
 import { clearToken, displayName, getToken, roleLabel } from "./Auth.js";
 import AuthView from "./components/AuthView.jsx";
+import Brand from "./components/Brand.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import { Directory, TutorProfile } from "./components/Discover.jsx";
 import { Booking, Sessions, SessionDetail } from "./components/Learning.jsx";
@@ -89,16 +90,6 @@ function currentRoute() {
   } catch {
     return { view: "Home" };
   }
-}
-function Brand() {
-  return (
-    <span className="brand">
-      <span className="brand-mark">
-        <Icon icon={GraduationCapIcon} size={23} />
-      </span>
-      StudyConnect<span className="brand-dot">.</span>
-    </span>
-  );
 }
 function Navigation({ view, navigate, count, onLogout }) {
   return (
