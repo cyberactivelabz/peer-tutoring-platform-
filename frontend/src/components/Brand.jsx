@@ -79,17 +79,6 @@ function LogoMark({ motion }) {
           />
         )}
       </span>
-      {motion && motionAllowed && finished && (
-  <button
-    type="button"
-    className="motion-replay"
-    onClick={() => setFinished(false)}
-    aria-label="Replay logo animation"
-    title="Replay logo animation"
-  >
-    ↻
-  </button>
-)}
     </>
   );
 }
