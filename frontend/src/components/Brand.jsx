@@ -56,6 +56,7 @@ function LogoMark({ motion }) {
       <span
         className={`logo-symbol ${motion ? "logo-symbol-motion" : ""}`}
         aria-hidden="true"
+        style={{ filter: "grayscale(1)" }}
       >
         <img
           src={motion ? POSTER : MARK}
@@ -63,6 +64,7 @@ function LogoMark({ motion }) {
           width="48"
           height="48"
           decoding="async"
+          style={{ filter: "grayscale(1) brightness(0) contrast(1.2)" }}
         />
         {playing && (
           <video
@@ -76,20 +78,11 @@ function LogoMark({ motion }) {
             disablePictureInPicture
             onEnded={() => setFinished(true)}
             onError={() => setMotionAllowed(false)}
+            style={{ filter: "grayscale(1) brightness(0) contrast(1.2)" }}
           />
         )}
       </span>
-      {motion && motionAllowed && finished && (
-        <button
-          type="button"
-          className="motion-replay"
-          onClick={() => setFinished(false)}
-          aria-label="Replay logo animation"
-          title="Replay logo animation"
-        >
-          ↻
-        </button>
-      )}
+      {/* RELOAD BUTTON REMOVED */}
     </>
   );
 }
@@ -97,13 +90,4 @@ function LogoMark({ motion }) {
 export default function Brand({ inverse = false, motion = false }) {
   return (
     <span
-      className={`brand ${inverse ? "brand-inverse" : ""} ${motion ? "brand-motion" : ""}`}
-    >
-      <LogoMark motion={motion} />
-      <span className="brand-wordmark">
-        <strong>Study</strong>
-        <span>Connect</span>
-      </span>
-    </span>
-  );
-}
+      className={`brand ${inverse ? "brand-inverse" :
