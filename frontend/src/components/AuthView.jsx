@@ -139,7 +139,7 @@ export default function AuthView({ onLogin }) {
                 {mode === "signup" && registrationStep === "form" && (
                   <>
                     <div className="role-toggle"><label>Gender<select value={gender} onChange={(event) => setGender(event.target.value)}><option value="" disabled>Select Gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option></select></label></div>
-                    <div className="role-toggle"><label>Account type<select value={role} onChange={(event) => setRole(event.target.value)} required><option value="" disabled>Select Account Type</option><option value="LEARNER">Learner</option><option value="TUTOR">Tutor</option><option value="BOTH">Learner and tutor</option><option value="STUDY_PARTNER">Study Partner</option></select></label></div>
+                    <div className="role-toggle"><label>Account type<select value={role} onChange={(event) => setRole(event.target.value)} required><option value="" disabled>Select Account Type</option><option value="LEARNER">Learner</option><option value="TUTOR">Tutor</option><option value="BOTH">Learner and tutor</option></select></label></div>
                     <label>First Name<input required name="firstName" autoComplete="given-name" placeholder="First name" /></label>
                     <label>Last Name<input required name="lastName" autoComplete="family-name" placeholder="Last name" /></label>
                     <label>Matric No / Reg. No<input required name="matricNumber" placeholder="Enter your matriculation or registration number" /></label>
