@@ -175,12 +175,6 @@ export default function AuthView({ onLogin }) {
           level: values.level,
           gender,
           role,
-          coursesToTeach: values.coursesToTeach
-            ? values.coursesToTeach
-                .split(",")
-                .map((course) => course.trim())
-                .filter(Boolean)
-            : [],
         });
         setRegistrationEmail(values.email.trim().toLowerCase());
         setRegistrationStep("verify");
@@ -495,19 +489,6 @@ export default function AuthView({ onLogin }) {
                         <option>500 Level</option>
                       </select>
                     </label>
-                    {["TUTOR", "BOTH"].includes(role) && (
-                      <fieldset className="course-picker">
-                        <legend>Courses you teach</legend>
-                        <label>
-                          <input
-                            type="text"
-                            name="coursesToTeach"
-                            placeholder="CSC201, MTH201"
-                          />{" "}
-                          Enter course codes separated by commas
-                        </label>
-                      </fieldset>
-                    )}
                   </>
                 )}
                 {mode === "signup" && registrationStep === "verify" ? (
