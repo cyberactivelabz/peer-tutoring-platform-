@@ -21,7 +21,7 @@ This document outlines the step-by-step onboarding screen flow required for the 
 [Screen 1: Institutional Verification] ──► (Generates OTP to .edu.ng Email)
        │
        ▼
-[Screen 2: Academic Identity Selection] ──► (Department, Faculty, Level Entry)
+[Screen 2: Academic Identity Selection] ──► (Matric or Registration number, Department, Level Entry)
        │
        ▼
 [Screen 3: Intent & Goals Toggles] ──► (Match Search vs. Peer-Tutor Switch)
@@ -43,7 +43,7 @@ This document outlines the step-by-step onboarding screen flow required for the 
   * Single input field optimized for custom text.
   * Secure Submit button.
 * **Input Field:** `Institutional Email Address` 
-  * *Validation Rule:* Must terminate strictly with a verified institutional domain (e.g., `*@oauife.edu.ng`, `*@unilag.edu.ng`).
+  * *Validation Rule:* Must terminate strictly with a verified domain (e.g., `*@oauife.edu.ng`, `*@unilag.gmail.com`).
 * **Trigger Event:** Automated issuance of a 6-digit confirmation one-time password (OTP) sent to the student's email inbox.
 
 ### Screen 2: Academic Profile Setup
@@ -53,16 +53,11 @@ This document outlines the step-by-step onboarding screen flow required for the 
   * Native search-and-select dropdown elements.
 * **Input Fields:**
   * `Full Name` (Text input)
-  * `Institution` (Dropdown menu)
-  * `Faculty` (Dropdown menu)
   * `Department` (Dropdown menu)
   * `Current Level of Study` (Select field: `100 Level`, `200 Level`, `300 Level`, `400 Level`, `500 Level`, `Graduate`)
 
 ### Screen 3: Strategic Match Persona Selection
 * **Objective:** Capture the user's intent to route them effectively through the match engine.
-* **UI Components:**
-  * Multi-select checkboxes.
-  * Binary slider/toggle switch.
 * **Question Prompt:** *"What are your primary goals for using PeerLink this semester? (Select all that apply)"*
   * [ ] Find a long-term, reliable study partner to stay disciplined.
   * [ ] Learn difficult topics from a peer tutor.
