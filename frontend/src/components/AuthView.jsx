@@ -149,4 +149,77 @@ export default function AuthView({ onLogin }) {
   );
 
   return (
-   
+    <main className="auth-screen">
+      <section className="auth-hero"><div className="auth-brand"><Brand inverse motion /></div><p className="eyebrow">YOUR CAMPUS. YOUR COMMUNITY.</p><h1>Big goals.<br />Better together.</h1><p className="auth-tagline">Learn <span>·</span> Support <span>·</span> Grow</p><p className="auth-description">Find your people. Build your confidence. Learn together with peer tutors and study partners on your campus.</p><footer>OAU Campus <span>|</span> Built by Students, For Students</footer></section>
+      <section className="auth-form-side">
+        <div className="auth-card">
+          <div className="auth-tabs"><button type="button" aria-pressed={mode === "login"} className={mode === "login" ? "selected" : ""} disabled={busy} onClick={() => { setMode("login"); setMessage(""); }}>Log In</button><button type="button" aria-pressed={mode === "signup"} className={mode === "signup" ? "selected" : ""} disabled={busy} onClick={() => { setMode("signup"); setMessage(""); }}>Sign Up</button></div>
+          <p className="eyebrow">LET’S MAKE PROGRESS</p>
+          <h2>{mode === "login" ? "Welcome Back" : mode === "signup" ? registrationStep === "verify" ? "Verify Your Email" : "Create Your Account" : resetStep === "email" ? "Forgot Password?" : resetStep === "code" ? "Enter Reset Code" : "Reset Password"}</h2>
+          {message && <p className="auth-help" role="status">{message}</p>}
+          {mode === "forgot" ? (
+            <form onSubmit={submitReset} aria-busy={busy}>
+              <fieldset disabled={busy} className="form-fields">
+                {resetStep === "email" && (<><p className="auth-help">Enter your registered email and we&apos;ll send a password reset code.</p><label>Email Address<input required type="email" name="email" value={resetEmail} onChange={(event) => setResetEmail(event.target.value)} placeholder="Enter your email address" /></label></>)}
+                {resetStep === "code" && (<><p className="auth-help">We sent a 6-digit code to <strong>{resetEmail}</strong>.</p><label>Verification code<input required name="code" value={resetCode} onChange={(event) => setResetCode(event.target.value)} autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength="6" placeholder="000000" /></label><button className="text-button" type="button" disabled={resending || cooldown > 0} onClick={() => resend(true)}>{resending ? "Sending…" : cooldown ? `Resend in ${cooldown}s` : "Resend code"}</button></>)}
+                {resetStep === "reset" && (
+                  <>
+                    <label>New password
+                      <div style={{ position: "relative" }}>
+                        <input required name="newPassword" type={showNewPass ? "text" : "password"} minLength="6" placeholder="Enter a new password" style={{ paddingRight: "40px" }} />
+                        <button type="button" onClick={() => setShowNewPass(!showNewPass)} style={eyeButtonStyle} tabIndex={-1}>{eyeIcon(showNewPass)}</button>
+                      </div>
+                    </label>
+                    <label>Confirm password
+                      <div style={{ position: "relative" }}>
+                        <input required name="confirmPassword" type={showConfirmPass ? "text" : "password"} minLength="6" placeholder="Confirm your new password" style={{ paddingRight: "40px" }} />
+                        <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} style={eyeButtonStyle} tabIndex={-1}>{eyeIcon(showConfirmPass)}</button>
+                      </div>
+                    </label>
+                  </>
+                )}
+                <button className="primary-button auth-submit" disabled={busy} type="submit">{busy ? "Please wait..." : resetStep === "email" ? "Send reset code" : resetStep === "code" ? "Verify code" : "Reset password"}</button>
+                <p className="auth-switch"><button type="button" onClick={() => { setMode("login"); setResetStep("email"); }}>Back to Log In</button></p>
+              </fieldset>
+            </form>
+          ) : (
+            <form onSubmit={submitAuth} aria-busy={busy}>
+              <fieldset disabled={busy} className="form-fields">
+                {mode === "signup" && registrationStep === "form" && (
+                  <>
+                    <div className="role-toggle"><label>Gender<select value={gender} onChange={(event) => setGender(event.target.value)}><option value="" disabled>Select Gender</option><option value="MALE">Male</option><option value="FEMALE">Female</option></select></label></div>
+                    <div className="role-toggle"><label>Account type<select value={role} onChange={(event) => setRole(event.target.value)} required><option value="" disabled>Select Account Type</option><option value="LEARNER">Learner</option><option value="TUTOR">Tutor</option><option value="BOTH">Learner and tutor</option></select></label></div>
+                    <label>First Name<input required name="firstName" autoComplete="given-name" placeholder="First name" /></label>
+                    <label>Last Name<input required name="lastName" autoComplete="family-name" placeholder="Last name" /></label>
+                    <label>Matric No / Reg. No<input required name="matricNumber" placeholder="Enter your matriculation or registration number" /></label>
+                    <label>Department<select required name="department" defaultValue=""><option value="" disabled>Select your department</option>{departments.map((department) => (<option key={department}>{department}</option>))}</select></label>
+                    <label>Level<select required name="level" defaultValue=""><option value="" disabled>Select your level</option><option>100 Level</option><option>200 Level</option><option>300 Level</option><option>400 Level</option><option>500 Level</option></select></label>
+                    {["TUTOR", "BOTH"].includes(role) && (<fieldset className="course-picker"><legend>Courses you teach</legend><label><input type="text" name="coursesToTeach" placeholder="CSC201, MTH201" /> Enter course codes separated by commas</label></fieldset>)}
+                  </>
+                )}
+                {mode === "signup" && registrationStep === "verify" ? (
+                  <><p className="auth-help">Enter the 6-digit code sent to {registrationEmail}.</p><label>Verification code<input required name="code" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength="6" placeholder="000000" /></label><button className="text-button" type="button" disabled={resending || cooldown > 0} onClick={() => resend(false)}>{resending ? "Sending…" : cooldown ? `Resend in ${cooldown}s` : "Resend code"}</button></>
+                ) : (
+                  <>
+                    <label>Email Address<input required name="email" type="email" autoComplete="email" placeholder="Enter your email address" /></label>
+                    <label>Password
+                      <div style={{ position: "relative" }}>
+                        <input required name="password" type={showPassword ? "text" : "password"} minLength="6" autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder="Enter your password" style={{ paddingRight: "40px" }} />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} style={eyeButtonStyle} tabIndex={-1}>
+                          {eyeIcon(showPassword)}
+                        </button>
+                      </div>
+                    </label>
+                  </>
+                )}
+                <button className="primary-button auth-submit" disabled={busy} type="submit">{busy ? "Please wait..." : mode === "login" ? "Log In" : registrationStep === "verify" ? "Verify email" : "Create account"}</button>
+                {mode === "login" && (<p className="auth-switch"><button type="button" onClick={() => setMode("forgot")}>Forgot password?</button></p>)}
+                {mode === "signup" && registrationStep === "form" && (<p className="auth-switch">Already have an account? <button type="button" onClick={() => setMode("login")}>Log In</button></p>)}
+              </fieldset>
+            </form>
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
