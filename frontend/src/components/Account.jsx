@@ -2,10 +2,21 @@ import { useState } from "react";
 import { api } from "../api.js";
 import { displayName, roleLabel } from "../Auth.js";
 import { Avatar, Heading, Notice, Tags } from "./ui.jsx";
+
+// --- PROFANITY FILTER ---
+const BAD_WORDS = ["fuck", "shit", "ass", "bitch", "porn", "sex"];
+
+function containsBadWords(text) {
+  if (!text) return false;
+  const lower = text.toLowerCase();
+  return BAD_WORDS.some(word => lower.includes(word));
+}
+
 export function Profile({ user, onSaved }) {
   const [busy, setBusy] = useState(false),
     [message, setMessage] = useState(""),
     [error, setError] = useState("");
+
   const save = async (e) => {
     e.preventDefault();
     const v = Object.fromEntries(new FormData(e.currentTarget));
@@ -14,10 +25,27 @@ export function Profile({ user, onSaved }) {
     setError("");
     try {
       const values = Object.fromEntries(
-        Object.entries(v).map(([k, v]) => [k, v.trim()]),
+        Object.entries(v).map(([k, val]) => [k, val.trim()]),
       );
+
       if (!values.firstName || !values.lastName)
         throw new Error("First and last names cannot be blank.");
+
+      // --- CHECK FOR BAD WORDS HERE ---
+      const fieldsToCheck = [
+        values.firstName,
+        values.lastName,
+        values.department,
+        values.level,
+        values.bio,
+        values.coursesToTeach,
+        values.coursesNeedingHelp
+      ].join(" ");
+
+      if (containsBadWords(fieldsToCheck)) {
+        throw new Error("Inappropriate content is not allowed. Please use proper course codes like MTH101 and professional language.");
+      }
+
       if (values.role === user.role) delete values.role;
       for (const key of ["coursesToTeach", "coursesNeedingHelp"])
         values[key] = [
@@ -28,6 +56,7 @@ export function Profile({ user, onSaved }) {
               .filter(Boolean),
           ),
         ];
+
       const updated = await api.updateProfile(values);
       onSaved(updated);
       setMessage("Your profile has been saved.");
@@ -37,6 +66,7 @@ export function Profile({ user, onSaved }) {
       setBusy(false);
     }
   };
+
   return (
     <>
       <Heading
@@ -184,6 +214,7 @@ export function Profile({ user, onSaved }) {
     </>
   );
 }
+
 export function Settings({ theme, onThemeChange, onProfile }) {
   return (
     <>
